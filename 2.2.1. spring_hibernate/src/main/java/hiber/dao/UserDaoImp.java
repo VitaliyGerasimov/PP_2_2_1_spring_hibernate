@@ -1,10 +1,13 @@
 package hiber.dao;
 
 import hiber.model.User;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -25,5 +28,17 @@ public class UserDaoImp implements UserDao {
       TypedQuery<User> query=sessionFactory.getCurrentSession().createQuery("from User");
       return query.getResultList();
    }
-
+   @Override
+   public User getUserByCarModelAndSeries(String model, int series) {
+      User user = null;
+      try (Session session = sessionFactory.openSession()) {
+         String hql = "FROM User WHERE car.model = :model AND car.series = :series";
+         user= session.createQuery(hql, User.class).setParameter("model", model)
+                 .setParameter("series", series).uniqueResult();
+      } catch (HibernateException e) {
+         e.printStackTrace();
+      }
+       return user;
+   }
 }
+
